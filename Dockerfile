@@ -228,26 +228,26 @@ RUN apt-get clean -y
 
 WORKDIR /scripts
 
-ADD requirements.txt /scripts
-RUN pip3 install -r /scripts/requirements.txt
+## unused
+#ADD requirements.txt /scripts
+#RUN pip3 install -r /scripts/requirements.txt
 
-# TODO: is there a better workaround to install addons?
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+# install external Python API
+RUN pip3 install grass-session
+
+# install GRASS GIS extensions
 RUN grass --tmp-location EPSG:4326 --exec g.extension extension=r.in.pdal
-RUN update-alternatives --remove python /usr/bin/python3
-
-# Fixup python shebangs - TODO: will be resolved in future by grass-core
-WORKDIR /root/.grass7/addons/scripts
-RUN find -type f | xargs sed -i 's,#!/usr/bin/env python,#!/usr/bin/env python3,'
 
 # add GRASS GIS envs for python usage
-ENV GISBASE "/usr/local/grass79/"
+ENV GISBASE "/usr/local/grass${GRASS_SHORT_VERSION}/"
 ENV GRASSBIN "/usr/local/bin/grass"
 ENV PYTHONPATH "${PYTHONPATH}:$GISBASE/etc/python/"
 ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:$GISBASE/lib"
 
 ADD src/test_grass_session.py /scripts
 ADD testdata/simple.laz /tmp
+# simple test: just scan the LAZ file
+/usr/bin/python3 /scripts/test_grass_session.py
 
 WORKDIR /grassdb
 VOLUME /grassdb

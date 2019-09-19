@@ -1,4 +1,2 @@
-grass-session
-requests
 # pathlib==1.0.1
 # six
